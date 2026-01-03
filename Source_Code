@@ -1,0 +1,527 @@
+
+
+--- START OF FILE package.json ---
+
+{
+  "name": "skp-cuts",
+  "version": "1.0.0",
+  "description": "Barber Shop Booking Site",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "lucide-react": "^0.263.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.5"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
+
+--- END OF FILE package.json ---
+
+
+--- START OF FILE README.md ---
+
+# SKP Cuts
+
+Professional haircutting portfolio and booking application.
+
+## Setup
+
+1. `npm install`
+2. `npm start`
+
+
+--- END OF FILE README.md ---
+
+
+--- START OF FILE public/index.html ---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SKP Cuts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                navy: '#1e293b',
+                blue: '#2563eb',
+                red: '#ef4444',
+                gold: '#fbbf24',
+              }
+            },
+            fontFamily: {
+              sans: ['Montserrat', 'sans-serif'],
+              serif: ['Playfair Display', 'serif'],
+            },
+            animation: {
+              'scroll-down': 'scrollDown 30s linear infinite',
+              'scroll-up': 'scrollUp 30s linear infinite',
+            },
+            keyframes: {
+              scrollDown: {
+                '0%': { transform: 'translateY(-50%)' },
+                '100%': { transform: 'translateY(0)' },
+              },
+              scrollUp: {
+                '0%': { transform: 'translateY(0)' },
+                '100%': { transform: 'translateY(-50%)' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+    <div id="root"></div>
+  </body>
+</html>
+
+--- END OF FILE public/index.html ---
+
+
+--- START OF FILE src/index.tsx ---
+
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error("Could not find root element to mount to");
+}
+
+const root = ReactDOM.createRoot(rootElement);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+--- END OF FILE src/index.tsx ---
+
+
+--- START OF FILE src/constants.ts ---
+
+import { Scissors, Ruler, User, Clock, AlertTriangle } from 'lucide-react';
+
+export const INSTAGRAM_URL = "https://www.instagram.com/skp_cuts?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==";
+
+export const HAIRCUT_IMAGES = [
+  "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=800",
+  "https://images.unsplash.com/photo-1635273051936-9d4cb74ea387?auto=format&fit=crop&q=80&w=800",
+  "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&q=80&w=800",
+  "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=800",
+  "https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&q=80&w=800",
+  "https://images.unsplash.com/photo-1503951914205-b7346a160864?auto=format&fit=crop&q=80&w=800",
+];
+
+export const RULES = [
+  "No Drinking/Smoking",
+  "Keep Profanity to the minimum",
+  "Have your money ready!",
+  "Respect Everyone",
+  "Restroom Access for Customers Only",
+  "Please Arrive with clean hair"
+];
+
+export const SERVICE_TYPES = [
+  { id: 'taper', label: 'Taper Fade' },
+  { id: 'skin-fade', label: 'Skin Fade' },
+  { id: 'burst-fade', label: 'Burst Fade' },
+  { id: 'classic', label: 'Classic Scissor Cut' },
+  { id: 'design', label: 'Freestyle Design' },
+  { id: 'buzz', label: 'Buzz Cut' },
+];
+
+--- END OF FILE src/constants.ts ---
+
+
+--- START OF FILE src/types.ts ---
+
+export interface BookingFormData {
+  name: string;
+  phone: string;
+  haircutType: string;
+  notes: string;
+}
+
+export interface GalleryImage {
+  url: string;
+  alt: string;
+}
+
+--- END OF FILE src/types.ts ---
+
+
+--- START OF FILE src/components/BackgroundGallery.tsx ---
+
+import React from 'react';
+import { HAIRCUT_IMAGES } from '../constants';
+
+const Column: React.FC<{ direction: 'up' | 'down'; className?: string }> = ({ direction, className }) => {
+  const images = [...HAIRCUT_IMAGES, ...HAIRCUT_IMAGES, ...HAIRCUT_IMAGES];
+  
+  return (
+    <div className={`relative h-screen overflow-hidden ${className}`}>
+      <div className={`absolute w-full flex flex-col gap-4 ${direction === 'down' ? 'animate-scroll-down' : 'animate-scroll-up'}`}>
+        {images.map((src, idx) => (
+          <div key={idx} className="w-full px-2 md:px-4">
+            <div className="rounded-lg md:rounded-xl overflow-hidden shadow-lg border border-slate-200 aspect-[2/3] opacity-80 md:opacity-100">
+              <img 
+                src={src} 
+                alt={`Client cut ${idx}`} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-transparent to-slate-50 pointer-events-none z-10 h-20 top-0" />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-50 via-transparent to-slate-50 pointer-events-none z-10 h-20 bottom-0 mt-auto" />
+    </div>
+  );
+};
+
+export const BackgroundGallery: React.FC = () => {
+  return (
+    <div className="fixed inset-0 pointer-events-none z-0 flex justify-between">
+      <div className="w-24 md:w-48 lg:w-64 h-full bg-slate-50/30 backdrop-blur-[2px]">
+        <Column direction="down" className="w-full" />
+      </div>
+      <div className="w-24 md:w-48 lg:w-64 h-full bg-slate-50/30 backdrop-blur-[2px]">
+        <Column direction="up" className="w-full" />
+      </div>
+    </div>
+  );
+};
+
+--- END OF FILE src/components/BackgroundGallery.tsx ---
+
+
+--- START OF FILE src/components/Header.tsx ---
+
+import React from 'react';
+import { Scissors } from 'lucide-react';
+
+export const Header: React.FC = () => {
+  return (
+    <header className="flex flex-col items-center justify-center py-8 text-center animate-fade-in-down">
+      <div className="relative mb-4">
+        <div className="w-16 h-16 bg-white border-2 border-brand-navy rounded-full flex items-center justify-center shadow-lg relative overflow-hidden">
+          <div className="absolute inset-0 flex flex-col -rotate-45 scale-150 opacity-20">
+             <div className="h-2 bg-brand-red w-full mb-1"></div>
+             <div className="h-2 bg-brand-blue w-full mb-1"></div>
+             <div className="h-2 bg-brand-red w-full mb-1"></div>
+             <div className="h-2 bg-brand-blue w-full mb-1"></div>
+             <div className="h-2 bg-brand-red w-full mb-1"></div>
+             <div className="h-2 bg-brand-blue w-full mb-1"></div>
+          </div>
+          <Scissors className="w-8 h-8 text-brand-navy relative z-10" />
+        </div>
+      </div>
+      
+      <h1 className="text-4xl font-serif font-bold text-brand-navy tracking-widest uppercase">
+        SKP_CUTS
+      </h1>
+      <p className="text-sm font-semibold text-brand-navy/60 tracking-[0.5em] mt-2">
+        EST. 2023
+      </p>
+    </header>
+  );
+};
+
+--- END OF FILE src/components/Header.tsx ---
+
+
+--- START OF FILE src/components/BookingForm.tsx ---
+
+import React, { useState } from 'react';
+import { Send, CheckCircle } from 'lucide-react';
+import { BookingFormData } from '../types';
+
+export const BookingForm: React.FC = () => {
+  const [formData, setFormData] = useState<BookingFormData>({
+    name: '',
+    phone: '',
+    haircutType: '',
+    notes: ''
+  });
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Construct email parameters
+    const subject = encodeURIComponent(`Booking Request: ${formData.name}`);
+    const body = encodeURIComponent(
+      `Name: ${formData.name}\n` +
+      `Phone: ${formData.phone}\n` +
+      `Style Desired: ${formData.haircutType}\n` +
+      `Notes: ${formData.notes}\n\n` +
+      `Sent via SKP Cuts Website`
+    );
+
+    // Open user's default email client
+    window.location.href = `mailto:skpcuts@gmail.com?subject=${subject}&body=${body}`;
+    
+    setIsSubmitted(true);
+    setTimeout(() => {
+        setIsSubmitted(false);
+        setFormData({ name: '', phone: '', haircutType: '', notes: '' });
+    }, 5000);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  if (isSubmitted) {
+    return (
+      <div className="bg-white p-8 rounded-2xl shadow-xl border border-green-100 flex flex-col items-center justify-center text-center h-full min-h-[400px]">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+          <CheckCircle className="w-8 h-8 text-green-600" />
+        </div>
+        <h3 className="text-2xl font-bold text-brand-navy mb-2">Opening Mail App...</h3>
+        <p className="text-slate-600">Please click <strong>Send</strong> in your email app to finalize sending the request to skpcuts@gmail.com.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-slate-100">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-brand-navy mb-1">Client Check-In</h2>
+        <p className="text-slate-500 text-sm">Send your details to get in the queue or book a slot.</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="name" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+            Full Name
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            required
+            value={formData.name}
+            onChange={handleChange}
+            className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all"
+            placeholder="John Doe"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="phone" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+            Phone Number
+          </label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            required
+            value={formData.phone}
+            onChange={handleChange}
+            className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all"
+            placeholder="(555) 123-4567"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="haircutType" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+            Style Desired
+          </label>
+          <input
+            type="text"
+            id="haircutType"
+            name="haircutType"
+            required
+            value={formData.haircutType}
+            onChange={handleChange}
+            className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all"
+            placeholder="e.g. Skin Fade, Taper, Design..."
+          />
+        </div>
+
+        <div>
+            <label htmlFor="notes" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Additional Notes
+            </label>
+            <textarea 
+                id="notes"
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                rows={3}
+                placeholder="Any specific requests?"
+                className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all resize-none"
+            />
+        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-brand-navy hover:bg-slate-800 text-white font-bold py-4 rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 mt-4"
+        >
+          <span>Send Request</span>
+          <Send className="w-4 h-4" />
+        </button>
+      </form>
+    </div>
+  );
+};
+
+--- END OF FILE src/components/BookingForm.tsx ---
+
+
+--- START OF FILE src/components/RulesSection.tsx ---
+
+import React from 'react';
+import { ShieldCheck } from 'lucide-react';
+import { RULES } from '../constants';
+
+export const RulesSection: React.FC = () => {
+  return (
+    <div className="w-full bg-slate-100 rounded-xl p-6 border-l-4 border-brand-navy">
+      <div className="flex items-center gap-3 mb-4">
+        <ShieldCheck className="w-6 h-6 text-brand-navy" />
+        <h3 className="font-serif text-xl font-bold text-brand-navy uppercase tracking-wide">
+          Shop Rules
+        </h3>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+        {RULES.map((rule, idx) => (
+          <div key={idx} className="flex items-start gap-2 text-sm text-slate-700">
+             <span className="mt-1.5 w-1.5 h-1.5 bg-brand-gold rounded-full flex-shrink-0" />
+             <span className="font-medium">{rule}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+--- END OF FILE src/components/RulesSection.tsx ---
+
+
+--- START OF FILE src/components/Footer.tsx ---
+
+import React from 'react';
+
+export const Footer: React.FC = () => {
+  return (
+    <footer className="mt-16 pb-8 text-center text-slate-400 text-sm">
+      <p>&copy; {new Date().getFullYear()} SKP Cuts. All rights reserved.</p>
+    </footer>
+  );
+};
+
+--- END OF FILE src/components/Footer.tsx ---
+
+
+--- START OF FILE src/App.tsx ---
+
+import React from 'react';
+import { BackgroundGallery } from './components/BackgroundGallery';
+import { Header } from './components/Header';
+import { BookingForm } from './components/BookingForm';
+import { RulesSection } from './components/RulesSection';
+import { Footer } from './components/Footer';
+import { INSTAGRAM_URL } from './constants';
+import { Instagram, MapPin } from 'lucide-react';
+
+const App: React.FC = () => {
+  return (
+    <div className="min-h-screen relative font-sans">
+      
+      {/* Floating Side Images */}
+      <BackgroundGallery />
+
+      {/* Main Content Area - Z-index ensures it's above the background gallery */}
+      <main className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Layout Container */}
+        <div className="flex flex-col items-center">
+          
+          {/* Central content column - limited width to show sides on large screens */}
+          <div className="w-full max-w-2xl bg-slate-50/95 backdrop-blur-sm shadow-2xl min-h-screen border-x border-slate-100">
+            
+            <Header />
+
+            <div className="px-6 md:px-10 space-y-10 pb-12">
+              
+              {/* Intro / About */}
+              <section className="text-center space-y-6">
+                <p className="text-lg text-slate-600 leading-relaxed">
+                  Welcome to <span className="font-bold text-brand-navy">SKP Cuts</span>. 
+                  Delivering fresh fades, sharp lineups, and professional service since 2023. 
+                  Book your appointment below and come get right.
+                </p>
+                
+                {/* Rules Section Moved Here */}
+                <RulesSection />
+
+                <div className="flex justify-center gap-4 pt-2">
+                   <a 
+                    href={INSTAGRAM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-2 bg-slate-900 text-white rounded-full text-sm font-semibold hover:bg-slate-700 transition-colors shadow-sm"
+                  >
+                    <Instagram className="w-4 h-4" />
+                    Follow on IG
+                  </a>
+                  <div className="inline-flex items-center gap-2 px-6 py-2 bg-slate-200 text-slate-700 rounded-full text-sm font-semibold shadow-sm">
+                    <MapPin className="w-4 h-4" />
+                    Keller, TX
+                  </div>
+                </div>
+              </section>
+
+              {/* Booking Form */}
+              <section id="book">
+                <BookingForm />
+              </section>
+
+              <Footer />
+            </div>
+
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default App;
+
+--- END OF FILE src/App.tsx ---
